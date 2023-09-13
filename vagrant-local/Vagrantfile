@@ -1,8 +1,8 @@
 $base = <<BASE
 #Packages
-sudo wget -q http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+#sudo wget -q http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
 sudo yum install -y epel-release
-sudo yum install -y jq unzip docker postgresql apache-maven
+sudo yum install -y jq unzip docker postgresql maven
 #Docker
 sudo groupadd docker
 sudo usermod -aG docker vagrant
@@ -24,7 +24,7 @@ POSTGRES
 
 $vault_install = <<VAULT_INSTALL
 #Get Vault
-VAULT=1.3.1
+VAULT=1.13.1
 VAULT_ZIP=/vagrant/bin/vault_${VAULT}_linux_amd64.zip
 if [ ! -f $VAULT_ZIP ]; then
   mkdir -p /vagrant/bin
@@ -51,8 +51,8 @@ VAULT_POLICY
 Vagrant.configure("2") do |config|
   config.vm.synced_folder "../", "/vagrant"
   config.vm.provider "virtualbox" do |vb|
-    vb.customize ["modifyvm", :id, "--memory", "2048"]
-    vb.customize ["modifyvm", :id, "--cpus", "1"]
+    vb.customize ["modifyvm", :id, "--memory", "4092"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
   end
   config.vm.define "demo" do |demo|
     demo.vm.box = "bento/centos-7.7"
@@ -67,9 +67,10 @@ Vagrant.configure("2") do |config|
     demo.vm.provision "shell", inline: $vault_install
     demo.vm.provision "docker" do |d|
       d.run "postgres",
-        args: "--net=host -d -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=p@sSw0rd_ -e PGPASSWORD=p@sSw0rd_"
+        image: "postgres:14-bullseye",
+        args: "--net=host -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=p@sSw0rd_ -e PGPASSWORD=p@sSw0rd_ --publish 5432:5432 -d"
       d.run "vault",
-        image: "vault:latest",
+        image: "hashicorp/vault:latest",
         args: "--net=host --cap-add=IPC_LOCK -e 'VAULT_DEV_ROOT_TOKEN_ID=root' -e 'VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200' -d"
       d.run "spring",
         args: "--net=host -v /vagrant/bootstrap.yaml:/bootstrap.yaml -e 'VAULT_TOKEN=root' -d"
