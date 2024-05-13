@@ -1,124 +1,50 @@
-# Java Sample App using Spring Cloud Vault
+# Using Vault in Spring applications
 
-These assets are provided to perform the tasks described in the [Java Application Demo](https://learn.hashicorp.com/vault/developer/eaas-spring-demo) guide.
+These assets demonstrate how to use Vault in Spring applications.
 
+Each subdirectory includes assets to do the following:
 
-Originally, this app was demonstrated during the [Manage secrets, access, and encryption in the public cloud
-with Vault](https://www.hashicorp.com/resources/solutions-engineering-webinar-series-episode-2-vault)
-webinar.
+- `vault-transit/`: Encrypt and decrypt application payloads with Vault transit secrets engine
 
-
-----
-
-
-## Demo Instruction
-
-To keep it simple and lightweight, the [Java Sample App using Spring Cloud Vault](https://learn.hashicorp.com/vault/developer/eaas-spring-demo) guide used **Vagrant** to demonstrate the app.  This repository also provides example deployments on various platforms:
-
-- [Nomad](nomad)
-- [Kubernetes](kubernetes)
-- [Pivotal Cloud Foundry](pcf)
-- [Vagrant](vagrant-local)
-- [AWS](aws)
-<br>
 
 ### Setup
 
-You can run the sample as a standalone Java application. You will need a Vault instance and a Postgres instance to get started.
+1. Install [Docker Compose](https://docs.docker.com/compose/install/).
 
-1. Run the [Postgres script](scripts/postgres.sql) at your Postgres instance.
-2. Run the [Vault script](scripts/vault.sh) at your Vault instance.
-3. Update the [bootstrap.yaml](bootstrap.yaml) file for your environment.
-4. Run the Java application.
-5. Try the API.
+1. Run Docker Compose to set up application dependencies.
+
+   ```shell
+   $ docker compose up -d
+   ```
+
+1. Run the application using Maven Wrapper.
+
+   ```shell
+   $ ./mvnw spring-boot:run
+   ```
 
 
+### Sample Application
 
-### API
+Each project uses a sample application with the following API:
 
-- Get Orders
+- Get payments
+
 ```
-$ curl -s -X GET \
-   http://localhost:8080/api/orders | jq
-[
-  {
-    "id": 204,
-    "customerName": "Lance",
-    "productName": "Vault-Ent",
-    "orderDate": 1523656082215
-  }
-]
-```
-- Create Order
-```
-$ curl -s -X POST \
-   http://localhost:8080/api/orders \
-   -H 'content-type: application/json' \
-   -d '{"customerName": "Lance", "productName": "Vault-Ent"}' | jq
-{
-  "id": 204,
-  "customerName": "Lance",
-  "productName": "Vault-Ent",
-  "orderDate": 1523656082215
-}
-```
-- Delete Orders
-```
-$ curl -s -X DELETE -w "%{http_code}" http://localhost:8080/api/orders | jq
-200
+$ curl localhost:8080/payments
+
+[{"cc_info":"4242424242424242","id":"b7703d9a-ff7b-4898-91ba-4b5adba8b7e5","name":"Test Customer","createdAt":"2024-05-09T17:51:21.099933Z"}]
 ```
 
-### Refreshing Static Secrets
+- Create a payment
 
-Spring has an actuator we can use to facilitate the rotation of static credentials. Example below.
-1. Export your env vars
 ```
-export VAULT_ADDR=http://localhost:8200
-export VAULT_TOKEN=root
-```
+$ curl -XPOST -d '{"name": "Test Customer", "cc_info": "4242424242424242"}' -H 'Content-Type:application/json' localhost:8080/payments
 
-2. Create the old secret.
-```
-$ curl -s \
-   --header "X-Vault-Token: ${VAULT_TOKEN}" \
-   --request POST \
-   --data '{"secret":"hello-old"}' \
-   --write-out "%{http_code}" ${VAULT_ADDR}/v1/secret/spring-vault-demo | jq
-204
+[{"cc_info":"4242424242424242","id":"b7703d9a-ff7b-4898-91ba-4b5adba8b7e5","name":"Test Customer","createdAt":"2024-05-09T17:51:21.099933Z"}]
 ```
 
-3. Read the old secret.
-```
-$ curl -s http://localhost:8080/api/secret | jq
-{
-  "key": "secret",
-  "value": "hello-old"
-}
-```
+The application requires the following dependencies:
 
-4. Create the new secret.
-```
-$ curl -s \
-   --header "X-Vault-Token: ${VAULT_TOKEN}" \
-   --request POST \
-   --data '{"secret":"hello-new"}' \
-   --write-out "%{http_code}" ${VAULT_ADDR}/v1/secret/spring-vault-demo | jq
-204
-```
-
-5. Rotate the secret.
-```
-$ curl -s -X POST http://localhost:8080/actuator/refresh | jq
-[
-  "secret"
-]
-```
-
-6. Read the new secret.
-```
-$ curl -s http://localhost:8080/api/secret | jq
-{
-  "key": "secret",
-  "value": "hello-new"
-}
-```
+- Vault server
+- PostgreSQL database
