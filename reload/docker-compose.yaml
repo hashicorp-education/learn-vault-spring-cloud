@@ -31,10 +31,9 @@ services:
   vault-configure:
     image: hashicorp/vault:latest
     restart: no
-    command: >
-      sh -c "vault secrets enable -version=2 kv &&
-             vault kv put kv/application '' &&
-             vault kv put kv/vault-static-secrets spring.datasource.username=postgres spring.datasource.password=postgres-admin-password"
+    volumes:
+      - ./scripts:/scripts
+    command: sh /scripts/setup.sh
     environment:
       <<: *cenv
     cap_add:
