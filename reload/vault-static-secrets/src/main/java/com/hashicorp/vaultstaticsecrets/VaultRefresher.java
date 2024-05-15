@@ -3,12 +3,10 @@ package com.hashicorp.vaultstaticsecrets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.context.refresh.ContextRefresher;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-@Configuration
-@EnableScheduling
+@Component
 class VaultRefresher {
     private final Log log = LogFactory.getLog(getClass());
 

@@ -21,11 +21,11 @@ public class VaultDynamicSecretsApplication {
 	@RefreshScope
 	DataSource dataSource(DataSourceProperties properties) {
 		var log = LogFactory.getLog(getClass());
-		var db = DataSourceBuilder //
-				.create()//
-				.url(properties.getUrl()) //
-				.username(properties.getUsername()) //
-				.password(properties.getPassword()) //
+		var db = DataSourceBuilder
+				.create()
+				.url(properties.getUrl())
+				.username(properties.getUsername())
+				.password(properties.getPassword())
 				.build();
 		log.info(
 				"rebuild data source: " +
