@@ -1,12 +1,11 @@
 #!/bin/bash
 
-PGUSER=postgres
-PGPASSWORD=postgres-admin-password
+PGUSER=${POSTGRES_USER}
+PGPASSWORD=${POSTGRES_PASSWORD}
 
 ## Store database admin password in Vault KV
-
 vault secrets enable -version=2 kv
-vault kv put kv/application
+vault kv put kv/application ''
 vault kv put kv/vault-static-secrets spring.datasource.username=${PGUSER} spring.datasource.password=${PGPASSWORD}
 
 ## Enable database secrets engine

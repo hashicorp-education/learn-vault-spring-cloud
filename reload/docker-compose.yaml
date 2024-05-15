@@ -8,11 +8,25 @@ x-common-env: &cenv
 services:
 
   postgres:
-    image: 'postgres:16'
+    image: postgres:16
     environment:
       <<: *cenv
     ports:
       - '5432:5432'
+    healthcheck:
+      test: /usr/bin/pg_isready
+
+  postgres-configure:
+    image: postgres:16
+    restart: no
+    volumes:
+      - ./scripts:/scripts
+    command: sh /scripts/db.sh
+    environment:
+      <<: *cenv
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   vault:
     image: hashicorp/vault:latest
@@ -33,7 +47,7 @@ services:
     restart: no
     volumes:
       - ./scripts:/scripts
-    command: sh /scripts/setup.sh
+    command: sh /scripts/vault.sh
     environment:
       <<: *cenv
     cap_add:

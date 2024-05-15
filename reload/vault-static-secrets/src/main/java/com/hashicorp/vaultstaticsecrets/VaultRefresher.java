@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 @Configuration
 @EnableScheduling
-public class VaultRefresher {
+class VaultRefresher {
     private final Log log = LogFactory.getLog(getClass());
 
     private final ContextRefresher contextRefresher;
