@@ -5,7 +5,9 @@ These assets demonstrate how to use Vault in Spring applications.
 Each subdirectory includes assets to do the following:
 
 - `vault-transit/`: Encrypt and decrypt application payloads with Vault transit secrets engine
-
+- `reload/vault-static-secrets`: Refresh application with new static secrets from Vault key-value secrets engine
+- `reload/vault-dynamic-secrets`: Refresh application with new database secrets from Vault database secrets engine
+- `reload/vault-graalvm`: Refresh GraalVM-based application with new secrets from Vault
 
 ### Setup
 
