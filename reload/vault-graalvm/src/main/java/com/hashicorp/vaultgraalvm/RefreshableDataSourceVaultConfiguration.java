@@ -58,7 +58,7 @@ public class RefreshableDataSourceVaultConfiguration {
                     String password = (String) secretLeaseCreatedEvent.getSecrets()
                             .get("password");
 
-                    log.info("update database properties : " + username);
+                    log.info("update database properties : " + username + "," + password);
                     properties.setUsername(username);
                     properties.setPassword(password);
 
@@ -71,7 +71,7 @@ public class RefreshableDataSourceVaultConfiguration {
     @Bean
     DataSource dataSource(DataSourceProperties properties) {
         var rebuild = (Function<DataSourceProperties, DataSource>) dataSourceProperties -> {
-            log.info("build data source: " + properties.getUsername());
+            log.info("build data source: " + properties.getUsername() + "," + properties.getPassword());
 
             return DataSourceBuilder
                     .create()
