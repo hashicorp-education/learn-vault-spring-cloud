@@ -1,0 +1,57 @@
+x-common-env: &cenv
+  POSTGRES_PASSWORD: postgres-admin-password
+  POSTGRES_USER: postgres
+  POSTGRES_DB: payments
+  VAULT_TOKEN: vault-root-password
+  VAULT_ADDR: http://vault:8200
+
+services:
+
+  postgres:
+    image: postgres:16
+    environment:
+      <<: *cenv
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: /usr/bin/pg_isready
+
+  postgres-configure:
+    image: postgres:16
+    restart: no
+    volumes:
+      - ./scripts:/scripts
+    command: sh /scripts/db.sh
+    environment:
+      <<: *cenv
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  vault:
+    image: hashicorp/vault:latest
+    command: |
+      vault server -dev -dev-listen-address=0.0.0.0:8200
+    environment:
+      <<: *cenv
+      VAULT_DEV_ROOT_TOKEN_ID: "vault-root-password"
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+
+  vault-configure:
+    image: hashicorp/vault:latest
+    restart: no
+    volumes:
+      - ./scripts:/scripts
+    command: sh /scripts/vault.sh
+    environment:
+      <<: *cenv
+    cap_add:
+      - IPC_LOCK
+    depends_on:
+      vault:
+        condition: service_healthy
